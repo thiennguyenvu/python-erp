@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div>
+    <div class="register">
+        <h1>Register</h1>
+        <div class="imgcontainer">
+            <img src="{{ url_for('static', filename='/images/login/cat.jpg') }}" alt="Avatar" class="avatar">
+        </div>
+        <div class="links">
+            <a href="{{ url_for('index') }}">Login</a>
+            <a href="{{ url_for('register') }}" class="active">Register</a>
+        </div>
+        <form action="" method="POST" novalidate>
+            {{ form.hidden_tag() }}
+            <label for="username">
+                <i class="fas fa-user"></i>
+            </label>
+            {{ form.username(size=32, placeholder='Username') }}
+            {% for error in form.username.errors %}
+            <span style="color: red;">*{{ error }}</span>
+            {% endfor %}
+
+            <label for="email">
+                <i class="fas fa-envelope-square"></i>
+            </label>
+            {{ form.email(size=64, placeholder='Email') }}
+            {% for error in form.email.errors %}
+            <span style="color: red;">*{{ error }}</span>
+            {% endfor %}
+
+            <label for="fullname">
+                <i class="fas fa-user-circle"></i>
+            </label>
+            {{ form.fullname(size=128, placeholder='Your display name') }}
+            {% for error in form.fullname.errors %}
+            <span style="color: red;">*{{ error }}</span>
+            {% endfor %}
+
+            <label for="password">
+                <i class="fas fa-lock"></i>
+            </label>
+            {{ form.password(size=32, placeholder='Password') }}
+            {% for error in form.password.errors %}
+            <span style="color: red;">*{{ error }}</span>
+            {% endfor %}
+
+            <label for="password2">
+                <i class="fas fa-lock"></i>
+            </label>
+            {{ form.password2(size=32, placeholder='Repeat Password') }}
+            {% for error in form.password2.errors %}
+            <span style="color: red;">*{{ error }}</span>
+            {% endfor %}
+
+            {{ form.submit() }}
+        </form>
+    </div>
+</div>
+{% endblock body %}

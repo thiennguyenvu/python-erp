@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {% if title %}
+    <title>{{ title }} | {{ brand }}</title>
+    {% else %}
+    <title>{{ brand }}</title>
+    {% endif %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% block head %}
+    {% endblock head %}
+    <!-- external js STARTS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <script src="{{ url_for('static', filename='js/jszip.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/xlsx.js') }} "></script>
+    <script src="{{ url_for('static', filename='js/general.js') }}"></script>
+    <!-- external js ENDS -->
+</head>
+{% if current_user.is_anonymous %}
+
+<body class="anonymous">
+    <nav></nav>
+    {% else %}
+
+    <body class="loggedin">
+        <nav class="navtop">
+            <div>
+                <a href="{{ url_for('index') }}">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="{{ url_for('charts') }}">
+                    <i class="fas fa-chart-bar"></i> Charts
+                </a>
+                <a href="{{ url_for('diagram') }}">
+                    <i class="fas fa-project-diagram"></i> Diagram
+                </a>
+                <a href="{{ url_for('demo_app') }}">
+                    <i class="fas fa-laptop-code"></i> Demo App
+                </a>
+                <a href="{{ url_for('profile', uname=current_user.username) }}">
+                    <i class="far fa-id-card"></i> Profile
+                </a>
+                <a href="{{ url_for('log_out') }}">
+                    <i class="fas fa-sign-out-alt"></i> Log out
+                </a>
+            </div>
+        </nav>
+        {% endif %}
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+
+        <div>
+            {% block body %}{% endblock body %}
+        </div>
+
+        <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+        {% block script %}
+        {% endblock script %}
+    </body>
+
+</html>

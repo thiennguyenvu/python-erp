@@ -1,0 +1,43 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div>
+    {% if current_user.is_anonymous %}
+
+    <div class="login">
+        <h1>Login</h1>
+        <div class="imgcontainer">
+            <img src="{{ url_for('static', filename='/images/login/cat.jpg') }}" alt="Avatar" class="avatar">
+        </div>
+        <div class="links">
+            <a href="{{ url_for('index') }}" class="active">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
+        </div>
+        <form action="" method="POST" novalidate>
+            {{ form.hidden_tag() }}
+            <label for="username">
+                <i class="fas fa-user"></i>
+            </label>
+            {{ form.username(size=32, placeholder='Username') }}
+            {% for error in form.username.errors %}
+            <span style="color: red;">*{{ error }}</span>
+            {% endfor %}
+
+            <label for="password">
+                <i class="fas fa-lock"></i>
+            </label>
+            {{ form.password(size=32, placeholder='Password') }}
+            {% for error in form.password.errors %}
+            <span style="color: red;">*{{ error }}</span>
+            {% endfor %}
+            <p class="remember-me">{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+
+            {{ form.submit() }}
+        </form>
+    </div>
+    {% else %}
+    <p style="font-size: 30px; font-weight: bold; text-align: center;">Welcome to {{ brand }}</p>
+    <div>Hello, <b>{{ current_user.fullname }}!</b></div>
+    {% endif %}
+</div>
+{% endblock body %}

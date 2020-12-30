@@ -1,0 +1,1480 @@
+{% extends 'layout.html' %}
+{% block body %}
+<style>
+    form {
+        border: none;
+    }
+
+    /* Label, input settings */
+    #form-plan label,
+    #form-history label,
+    .table-history label {
+        display: inline-block;
+        width: 100px;
+        margin: 5px 0px;
+        font-size: 13px;
+    }
+
+    .output-data label {
+        display: inline-block;
+        width: 75px;
+        margin: 8px 0px;
+        font-size: 13px;
+    }
+
+    .output-data input {
+        width: 70px;
+    }
+
+    .opt-empty {
+        display: none;
+    }
+
+    /* Form settings */
+    #form-plan fieldset,
+    #form-history fieldset {
+        border: 1px groove #ddd;
+        padding: 0 25px 25px 25px;
+    }
+
+    #form-plan legend,
+    #form-history legend {
+        width: inherit;
+        padding: 0 10px;
+        border-bottom: none;
+    }
+
+    /* Button settings */
+    #div-button {
+        padding-top: 5px;
+    }
+
+    #div-button button:disabled {
+        background-color: #ddd;
+    }
+
+    #btn-history {
+        display: none;
+    }
+
+    .btn-red {
+        background-color: #D34246;
+    }
+
+    .btn-yellow {
+        background-color: #FFD075;
+    }
+
+    /* Table settings */
+    table.table-history {
+        margin-top: 15px;
+        border: 1px groove #ddd;
+    }
+
+    .table-history button {
+        padding: 3px;
+    }
+
+    .table-history button:disabled {
+        background-color: #ddd;
+    }
+
+    .table-history th,
+    .table-history tr,
+    .table-history td {
+        text-align: center;
+        /* border: 1px groove #ddd; */
+    }
+
+    .table-history>tbody>tr>td,
+    .table-history>tbody>tr>th,
+    .table-history>tfoot>tr>td,
+    .table-history>tfoot>tr>th,
+    .table-history>thead>tr>td,
+    .table-history>thead>tr>th {
+        padding: 0px 8px;
+    }
+
+    .table-history td.disabled {
+        color: #d3d3d3;
+    }
+
+    .output-data table {
+        border: 5px solid black;
+        text-align: center;
+    }
+
+    .output-data table>tbody>tr>td,
+    .output-data table>tbody>tr>th,
+    .output-data table>tfoot>tr>td,
+    .output-data table>tfoot>tr>th,
+    .output-data table>thead>tr>td,
+    .output-data table>thead>tr>th {
+        vertical-align: middle;
+        padding: 8px 0px;
+    }
+
+    .output-data .td-model {
+        font-weight: bold;
+        background-color: #FFFFA3;
+        font-size: 40px;
+        margin-top: 10px;
+        border: 1px solid #000;
+    }
+
+    .output-data .th-status {
+        background-color: #fff;
+    }
+
+    .output-data .th-line {
+        font-size: 35px;
+        padding-left: 15px;
+        text-align: center;
+        background-color: #1877f2;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .output-data .th-day {
+        font-size: 22px;
+        text-align: right;
+        padding-right: 15px;
+        background-color: #1877f2;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .output-data .td-label {
+        border: 1px solid #000;
+        font-weight: bold;
+        padding: 10px;
+        text-align: left;
+        font-size: 20px;
+        border-right: none;
+    }
+
+    .output-data .td-value {
+        border: 1px solid #000;
+        font-weight: bold;
+        padding: 10px;
+        font-size: 40px;
+    }
+
+    .output-data .td-finish.per-0 {
+        background-color: #f4dbc1;
+        color: #000;
+    }
+
+    .output-data .td-finish.per-25 {
+        background-color: #ecc092;
+        color: #000;
+    }
+
+    .output-data .td-finish.per-50 {
+        background-color: #eab783;
+        color: #fff;
+    }
+
+    .output-data .td-finish.per-75 {
+        background-color: #E5A564;
+        color: #fff;
+    }
+
+    .output-data .block-align {
+        padding: 8px 0px;
+        text-align: center;
+    }
+
+    /* Color status */
+    .output-data .stt-0,
+    .output-data .stt-0-0,
+    .output-data .stt-0-1 {
+        color: #d3d3d3;
+    }
+
+    .output-data .stt-1 {
+        color: #0F7A48;
+    }
+
+    .output-data .stt-1-1 {
+        color: #4CAF50;
+    }
+
+    .output-data .stt-1-0 {
+        color: #D34246;
+    }
+
+    .fas.fa-circle {
+        font-size: 30px;
+    }
+
+    .fas.fa-signal {
+        font-size: 40px;
+    }
+
+    .tbl-arm-a,
+    .tbl-arm-b,
+    .tbl-arm-c,
+    .tbl-arm-d,
+    .tbl-arm-e,
+    .tbl-arm-f,
+    .tbl-arm-j,
+    .tbl-ass-a,
+    .tbl-ass-b,
+    .tbl-ass-c,
+    .tbl-ass-d,
+    .tbl-ass-e,
+    .tbl-ass-f,
+    .tbl-ass-j {
+        display: none;
+    }
+</style>
+<!-- Input and View history STARTS -->
+<div style="display: flex;">
+    <div class="container-fluid col-md-6">
+        <form id="form-plan" name="form-plan" action="{{ url_for('demo_app') }}" method="POST">
+            <div class="col-md-8">
+                <fieldset>
+                    <legend>Information Requirement</legend>
+                    <label for="department">Department: </label>
+                    <select id="department" name="department" required>
+                        <option value="" class="opt-empty"></option>
+                        {% for idept in department['Department'] %}
+                        <option value="{{ department['Department'][idept] }}">
+                            {{ department['Department'][idept] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <br>
+                    <label for="line">Line: </label>
+                    <select id="line" name="line" required>
+                        <option value="" class="opt-empty"></option>
+                        {% for iline in line['Line'] %}
+                        <option value="{{ line['Line'][iline] }}">
+                            {{ line['Line'][iline] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <br>
+                    <label for="model">Model: </label>
+                    <select id="model" name="model" required>
+                        <option value="" class="opt-empty"></option>
+                        {% for item in data['Model'] %}
+                        <option value="{{ data['Model'][item] }}">
+                            {{ data['Model'][item] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <br>
+                    <label for="plan">Plan: </label>
+                    <input id="plan" name="plan" type="number" min="1" step="1" required>
+                    <br>
+                    <label for="version">Version of plan: </label>
+                    <input id="version" name="version" type="number" min="1" step="1" required>
+                    <br>
+                </fieldset>
+            </div>
+
+            <div id="div-button" class="col-md-4">
+                <button id="btn-plan" name="btn-plan" type="submit" disabled>Create Plan</button>
+                <div class="note"><b>Note:</b>
+                    <p>Please fill information to create plan</p>
+                </div>
+                <div class="warning">{{ msg | safe }}</div>
+            </div>
+        </form>
+    </div>
+    <div class="container-fluid col-md-6">
+        <form id="form-history" name="form-history" action="{{ url_for('demo_app') }}" method="POST">
+            <div class="col-md-12">
+                <fieldset>
+                    <legend>View History</legend>
+                    <div class="col-md-12">
+                        <label for="date-history">Day: </label>
+                        <input id="date-history" name="date-history" type="date"
+                            value="{{ request.form['date-history'] }}" required>
+                    </div>
+                    <div class="row col-md-12" style="margin-top: 10px;">
+                        <div class="col-md-4 table-history">
+                            <button type="button">Line Name</button>
+                        </div>
+                        <div class="col-md-8" style="padding: 10px;">Line is running</div>
+                    </div>
+                    <div class="row col-md-12">
+                        <div class="col-md-4 table-history">
+                            <button type="button" disabled>Line Name</button>
+                        </div>
+                        <div class="col-md-8" style="padding: 10px;">Line is not working</div>
+                    </div>
+
+                    <!-- <div>log['Date'][item], log['Time'][item],
+                    log['Department'][item], log['Line'][item],
+                    log['Model'][item], log['Plan'][item],
+                    log['File Name'][item]</div> -->
+                </fieldset>
+            </div>
+            <div class="col-md-12">
+                <button id="btn-history" name="btn-history" type="submit">Search</button>
+            </div>
+        </form>
+        <div>
+            <form id="form-line" name="form-line" action="" method="POST">
+                <div class="col-md-6">
+                    <div class="table-responsive">
+                        <table class="table table-history table-arm">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">ARM</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class='arm-a'><button name="arm-a" type="button" disabled>Line A</button></td>
+                                    <td class='arm-b'><button name="arm-b" type="button" disabled>Line B</button></td>
+                                </tr>
+                                <tr>
+                                    <td class='arm-c'><button name="arm-c" type="button" disabled>Line C</button></td>
+                                    <td class='arm-d'><button name="arm-d" type="button" disabled>Line D</button></td>
+                                </tr>
+                                <tr>
+                                    <td class='arm-e'><button name="arm-e" type="button" disabled>Line E</button></td>
+                                    <td class='arm-f'><button name="arm-f" type="button" disabled>Line F</button></td>
+                                </tr>
+                                <tr>
+                                    <td class='arm-j'><button name="arm-j" type="button" disabled>Line J</button></td>
+                                    <td class=''></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="table-responsive">
+                        <table class="table table-history table-ass">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">ASS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class='ass-a'><button name="ass-a" type="button" disabled>Line A</button></td>
+                                    <td class='ass-b'><button name="ass-b" type="button" disabled>Line B</button></td>
+                                </tr>
+                                <tr>
+                                    <td class='ass-c'><button name="ass-c" type="button" disabled>Line C</button></td>
+                                    <td class='ass-d'><button name="ass-d" type="button" disabled>Line D</button></td>
+                                </tr>
+                                <tr>
+                                    <td class='ass-e'><button name="ass-e" type="button" disabled>Line E</button></td>
+                                    <td class='ass-f'><button name="ass-f" type="button" disabled>Line F</button></td>
+                                </tr>
+                                <tr>
+                                    <td class='ass-j'><button name="ass-j" type="button" disabled>Line J</button></td>
+                                    <td class=''></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Input and View history ENDS -->
+<div class="output-data">
+    <div class="col-md-6">
+        {% if selected_arm_a != [] %}
+        {% for line in selected_arm_a %}
+        <table class="table tbl-arm tbl-arm-a">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_arm_b != [] %}
+        {% for line in selected_arm_b %}
+        <table class="table tbl-arm tbl-arm-b">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_arm_c != [] %}
+        {% for line in selected_arm_c %}
+        <table class="table tbl-arm tbl-arm-c">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_arm_d != [] %}
+        {% for line in selected_arm_d %}
+        <table class="table tbl-arm tbl-arm-d">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_arm_e != [] %}
+        {% for line in selected_arm_e %}
+        <table class="table tbl-arm tbl-arm-e">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_arm_f != [] %}
+        {% for line in selected_arm_f %}
+        <table class="table tbl-arm tbl-arm-f">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_arm_j != [] %}
+        {% for line in selected_arm_j %}
+        <table class="table tbl-arm tbl-arm-j">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        {% if selected_ass_a != [] %}
+        {% for line in selected_ass_a %}
+        <table class="table tbl-ass tbl-ass-a">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_ass_b != [] %}
+        {% for line in selected_ass_b %}
+        <table class="table tbl-ass tbl-ass-b">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_ass_c != [] %}
+        {% for line in selected_ass_c %}
+        <table class="table tbl-ass tbl-ass-c">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_ass_d != [] %}
+        {% for line in selected_ass_d %}
+        <table class="table tbl-ass tbl-ass-d">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_ass_e != [] %}
+        {% for line in selected_ass_e %}
+        <table class="table tbl-ass tbl-ass-e">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_ass_f != [] %}
+        {% for line in selected_ass_f %}
+        <table class="table tbl-ass tbl-ass-f">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+
+        {% if selected_ass_j != [] %}
+        {% for line in selected_ass_j %}
+        <table class="table tbl-ass tbl-ass-j">
+            <thead>
+                <tr>
+                    <td colspan="2" style="background-color: #fff;">
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                    </td>
+                    <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
+                    <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #d3d3d3;">
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
+                    <td class="td-label">Q'ty Plan</td>
+                    <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
+                    <td class="td-label">ST Plan</td>
+                    <td class="td-value">{{ line['ST Plan'] }}</td>
+                </tr>
+                <tr style="background-color: #FCF1B1">
+                    <td class="td-label">Q'ty Actual</td>
+                    <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
+                    <td class="td-label">ST Actual</td>
+                    <td class="td-value">{{ line['ST Actual'] }}</td>
+                </tr>
+                <tr>
+                    <td class="td-finish td-label">% Finish</td>
+                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    <td>
+                        <p><b style="font-size: 18px;">Machine</b></p>
+                        {% if line['Machine'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Material</b></p>
+                        {% if line['Material'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Quality</b></p>
+                        {% if line['Quality'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <p><b style="font-size: 18px;">Other</b></p>
+                        {% if line['Other'] == 0 %}
+                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                        {% else %}
+                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endblock body %}
+{% block script %}
+<script>
+    jQuery(function ($) {
+        // Detect user fill input        
+        $('#version').on('input', function () {
+            $version = $('#version').val();
+            if ($version === '') {
+                $('#div-button button').attr("disabled", true);
+                $('.note').fadeIn(600);
+            }
+            else {
+                $('#div-button button').removeAttr('disabled');
+                $('.note').fadeOut(600);
+            }
+        });
+
+        // Get current date & log file data
+        var selected_date = '{{ selected_date | safe }}';
+        console.log(selected_date);
+        $('#date-history').val(selected_date);
+        var selected_log = JSON.parse('{{ selected_log | tojson | safe }}');
+
+        // History form auto submit when choose date
+        $('#date-history').on('change', function () {
+            $('#btn-history').click();
+        });
+
+        // Bold and show Line running
+        var selected_arm_a = '{{ selected_arm_a }}';
+        console.log(selected_arm_a);
+
+        var arm_a = []; var arm_b = []; var arm_c = []; var arm_d = [];
+        var arm_e = []; var arm_f = []; var arm_j = [];
+        var ass_a = []; var ass_b = []; var ass_c = []; var ass_d = [];
+        var ass_e = []; var ass_f = []; var ass_j = [];
+        for (var i = 0; i < selected_log.length; i++) {
+            if (selected_log[i]['Department'] == 'ARM') {
+                if (selected_log[i]['Line'] == 'A') { $('.arm-a button').removeAttr('disabled').addClass('enabled'); arm_a.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'B') { $('.arm-b button').removeAttr('disabled').addClass('enabled'); arm_b.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'C') { $('.arm-c button').removeAttr('disabled').addClass('enabled'); arm_c.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'D') { $('.arm-d button').removeAttr('disabled').addClass('enabled'); arm_d.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'E') { $('.arm-e button').removeAttr('disabled').addClass('enabled'); arm_e.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'F') { $('.arm-f button').removeAttr('disabled').addClass('enabled'); arm_f.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'J') { $('.arm-j button').removeAttr('disabled').addClass('enabled'); arm_j.push(selected_log[i]) }
+            }
+            if (selected_log[i]['Department'] == 'ASS') {
+                if (selected_log[i]['Line'] == 'A') { $('.ass-a button').removeAttr('disabled').addClass('enabled'); ass_a.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'B') { $('.ass-b button').removeAttr('disabled').addClass('enabled'); ass_b.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'C') { $('.ass-c button').removeAttr('disabled').addClass('enabled'); ass_c.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'D') { $('.ass-d button').removeAttr('disabled').addClass('enabled'); ass_d.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'E') { $('.ass-e button').removeAttr('disabled').addClass('enabled'); ass_e.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'F') { $('.ass-f button').removeAttr('disabled').addClass('enabled'); ass_f.push(selected_log[i]) }
+                if (selected_log[i]['Line'] == 'J') { $('.ass-j button').removeAttr('disabled').addClass('enabled'); ass_j.push(selected_log[i]) }
+            }
+        }
+
+        // Show data table when user click Line running
+        // arm
+        $('.arm-a button').click(function () {
+            $('.tbl-arm').hide();
+            $('.tbl-arm-a').show();
+        });
+        $('.arm-b button').click(function () {
+            $('.tbl-arm').hide();
+            $('.tbl-arm-b').show();
+        });
+        $('.arm-c button').click(function () {
+            $('.tbl-arm').hide();
+            $('.tbl-arm-c').show();
+        });
+        $('.arm-d button').click(function () {
+            $('.tbl-arm').hide();
+            $('.tbl-arm-d').show();
+        });
+        $('.arm-e button').click(function () {
+            $('.tbl-arm').hide();
+            $('.tbl-arm-e').show();
+        });
+        $('.arm-f button').click(function () {
+            $('.tbl-arm').hide();
+            $('.tbl-arm-f').show();
+        });
+        $('.arm-j button').click(function () {
+            $('.tbl-arm').hide();
+            $('.tbl-arm-j').show();
+        });
+
+        // ass
+        $('.ass-a button').click(function () {
+            $('.tbl-ass').hide();
+            $('.tbl-ass-a').show();
+        });
+        $('.ass-b button').click(function () {
+            $('.tbl-ass').hide();
+            $('.tbl-ass-b').show();
+        });
+        $('.ass-c button').click(function () {
+            $('.tbl-ass').hide();
+            $('.tbl-ass-c').show();
+        });
+        $('.ass-d button').click(function () {
+            $('.tbl-ass').hide();
+            $('.tbl-ass-d').show();
+        });
+        $('.ass-e button').click(function () {
+            $('.tbl-ass').hide();
+            $('.tbl-ass-e').show();
+        });
+        $('.ass-f button').click(function () {
+            $('.tbl-ass').hide();
+            $('.tbl-ass-f').show();
+        });
+        $('.ass-j button').click(function () {
+            $('.tbl-ass').hide();
+            $('.tbl-ass-j').show();
+        });
+
+        // On off status color
+        setInterval(function () {
+            $('.stt-1-0').fadeOut(500);
+            $('.stt-1-0').fadeIn(500);
+        }, 500);
+    });
+</script>
+{% endblock script %}

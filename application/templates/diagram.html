@@ -1,0 +1,183 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+<script src="js/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.15.3/xlsx.full.min.js"></script>
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.js"></script>
+{% endblock head %}
+
+{% block body %}
+<div>
+    <p style="font-size: 30px; font-weight: bold; text-align: center;">Chart Demo</p>
+
+    <div id="chart-input-form">
+        <p id="count-item"></p>
+        <label for="search-item">Choose a item ID:</label>
+        <input list="list-item" id="search-item">
+        <input type="submit" value="View Chart" id="view-chart">
+        <datalist id="list-item"></datalist>
+        <br><br>
+    </div>
+    <div class="chart-container">
+        <canvas id="line-chart">
+        </canvas>
+        <div class="chart-content"></div>
+    </div>
+
+    <script>
+        var items = [];
+        var unique_items = [];
+        var selected_items = [];
+        var config = {};
+        var range_storage;
+        var localData = [];
+
+        jQuery(function ($) {
+            $.getJSON("{{ url_for('static', filename='excel/test.json') }}", function (data) {
+
+                json = JSON.parse(data);
+                for (i = 0; i < json.length; i++) {
+                    items.push(json[i]);
+
+                    var itemID = json[i]['Item ID'];
+                    unique_items.push(itemID);
+                }
+                unique_items = uniq_arr(unique_items);
+
+                $('#search-item').on('keyup', function () {
+                    $('#list-item').empty();
+                    var qty_item = 0;
+                    var list_range = 15;
+                    var input = $('#search-item').val().toLowerCase().trim();
+                    var count = 0;
+                    for (i = 0; i < unique_items.length; i++) {
+                        if (unique_items[i].toLowerCase().trim().indexOf(input) > -1) {
+                            if (qty_item < list_range) {
+                                $('#list-item').append('<option value="' + unique_items[i] + '">' + unique_items[i] + '</option>');
+                            }
+                            count++;
+                            qty_item++;
+                        }
+                    }
+                    (count > 1) ? $('#count-item').text(count + ' items found')
+                        : $('#count-item').text(count + ' item found');
+                });
+
+                $('#view-chart').click(function () {
+                    window.localStorage.clear();
+                    var input = $('input#search-item').val();
+                    var keyID = 0;
+                    //console.log(input);
+                    for (i = 0; i < items.length; i++) {
+                        if (items[i]['Item ID'] === input) {
+                            var key = items[i]['Item ID'] + ' (' + i + ')';
+                            //window.localStorage.setItem(keyID, key);
+                            //window.localStorage.setItem(key, JSON.stringify(items[i]));
+                            keyID += 2;
+                        }
+                    }
+                    range_storage = Math.round(window.localStorage.length / 2);
+                    window.localStorage.setItem('range_storage', range_storage);
+                });
+            });
+            for (i = 0; i < localStorage.length; i++) {
+                if (i % 2 == 0) {
+                    var keyID = window.localStorage.getItem(i);
+                    var str_data = window.localStorage.getItem(keyID);
+                    var obj_data = JSON.parse(str_data);
+                    console.log(obj_data);
+                }
+            }
+
+            var timeFormat = 'DD/MM/YYYY';
+            config = {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: '',
+                            data: [{
+                                x: "24/2/2020", y: 56
+                            }, {
+                                x: "01/06/2020", y: 15
+                            }, {
+                                x: "17/06/2020", y: 15
+                            }, {
+                                x: "30/06/2020", y: 21
+                            }, {
+                                x: "01/07/2020", y: 21
+                            }, {
+                                x: "15/07/2020", y: 16
+                            }, {
+                                x: "13/08/2020", y: 60
+                            }, {
+                                x: "21/08/2020", y: 74
+                            }, {
+                                x: "31/08/2020", y: 62
+                            }, {
+                                x: "21/09/2020", y: 155
+                            }, {
+                                x: "30/09/2020", y: 22
+                            }, {
+                                x: "03/10/2020", y: 19
+                            }, {
+                                x: "19/10/2020", y: 122
+                            }, {
+                                x: "6/11/2020", y: 100
+                            },],
+
+                            fill: false,
+                            borderColor: 'red'
+                        },
+                        {
+                            label: "8046-M00MOTOR ASS'Y-MG1",
+                            data: [{
+                                x: "01/06/2020", y: 675
+                            }, {
+                                x: "11/07/2014", y: 225
+                            },],
+                            fill: false,
+                            borderColor: 'blue'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: "Demo Time Scale"
+                    },
+                    scales: {
+                        xAxes: [{
+                            type: "time",
+                            time: {
+                                format: timeFormat,
+                                tooltipFormat: 'l2'
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Date'
+                            }
+                        }],
+                        yAxes: [{
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Q\'ty Input'
+                            }
+                        }]
+                    }
+                }
+            };
+            window.onload = function () {
+                var ctx = document.getElementById("line-chart").getContext("2d");
+                window.myLine = new Chart(ctx, config);
+            };
+        });
+
+
+    </script>
+</div>
+
+{% endblock body %}

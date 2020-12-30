@@ -1,0 +1,62 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+    <script src="js/chart.js"></script>
+{% endblock head %}
+
+{% block body %}
+    <div>
+        <p style="font-size: 30px; font-weight: bold; text-align: center;">Chart Demo</p>
+        <div style="display: inline-block;">
+            <canvas id="line-chart" width="490" height="300" style="border:1px solid #000000;">
+            </canvas>
+        </div>
+        <script>
+            var fileContent = loadFileServer('txt/chart.txt');
+            fileContent = fileContent.split('\n')
+            for (i = 0; i < fileContent.length; i++) {
+                fileContent[i] = fileContent[i].replace('[', '').replace(']', '')
+                fileContent[i] = fileContent[i].split(',').map(d => Number(d) || d)
+            }
+            console.log('filecontent', fileContent);
+            console.log('type of filecontent', typeof (fileContent));
+
+            var ctx = document.getElementById('line-chart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+
+                data: {
+                    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                    datasets: [
+                        {
+                            label: 'Python',
+                            backgroundColor: 'transparent',
+                            borderColor: 'rgb(0, 0, 255)',
+                            data: fileContent[0]
+                        },
+                        {
+                            label: 'Java',
+                            backgroundColor: 'transparent',
+                            borderColor: 'rgb(255, 99, 132)',
+                            data: fileContent[1]
+                        },
+                        {
+                            label: 'C++',
+                            backgroundColor: 'transparent',
+                            borderColor: 'rgb(70, 255, 70)',
+                            data: fileContent[2]
+                        },
+                        {
+                            label: 'Javascript',
+                            backgroundColor: 'transparent',
+                            borderColor: 'rgb(50, 168, 82)',
+                            data: fileContent[3]
+                        }
+                    ]
+                },
+
+                options: {}
+            });
+        </script>
+    </div>
+{% endblock body %}
