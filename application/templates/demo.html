@@ -150,7 +150,6 @@
         padding: 10px;
         text-align: left;
         font-size: 20px;
-        border-right: none;
     }
 
     .output-data .td-value {
@@ -160,29 +159,51 @@
         font-size: 40px;
     }
 
-    .output-data .td-finish.per-0 {
+    /* % Finish auto change color */
+    .td-finish.per-40 {
+        background-color: #E5A564;
+        color: #fff;
+    }
+
+    .td-finish.per-70 {
+        background-color: #ecc092;
+        color: #fff;
+    }
+
+    .td-finish.per-90 {
         background-color: #f4dbc1;
         color: #000;
     }
 
-    .output-data .td-finish.per-25 {
-        background-color: #ecc092;
+    .td-finish.per-100 {
+        background-color: #f9ede0;
         color: #000;
     }
 
-    .output-data .td-finish.per-50 {
-        background-color: #eab783;
-        color: #fff;
+    .finish-explain {
+        margin-top: 60px;
     }
 
-    .output-data .td-finish.per-75 {
-        background-color: #E5A564;
-        color: #fff;
+    .finish-explain .finish-label {
+        margin-top: 20px;
+    }
+
+    .finish-explain .col-md-2 {
+        padding-left: 0px;
+        padding-right: 0px;
     }
 
     .output-data .block-align {
         padding: 8px 0px;
         text-align: center;
+    }
+
+    /* space table */
+    .output-data table.tbl-arm,
+    .output-data table.tbl-ass {
+        margin-bottom: 100px;
+        border-spacing: 10px;
+        border-collapse: separate;
     }
 
     /* Color status */
@@ -212,6 +233,14 @@
         font-size: 40px;
     }
 
+    /* Hide on mobile */
+    @media only screen and (max-width: 767px){
+        .hide-on-mobile{
+            display: none;
+        }
+    }
+
+    /* Hide all data table */
     .tbl-arm-a,
     .tbl-arm-b,
     .tbl-arm-c,
@@ -225,13 +254,11 @@
     .tbl-ass-d,
     .tbl-ass-e,
     .tbl-ass-f,
-    .tbl-ass-j {
-        display: none;
-    }
+    .tbl-ass-j {}
 </style>
 <!-- Input and View history STARTS -->
 <div style="display: flex;">
-    <div class="container-fluid col-md-6">
+    <div class="container-fluid col-md-6 hide-on-mobile">
         <form id="form-plan" name="form-plan" action="{{ url_for('demo_app') }}" method="POST">
             <div class="col-md-8">
                 <fieldset>
@@ -283,6 +310,26 @@
                 <div class="warning">{{ msg | safe }}</div>
             </div>
         </form>
+        <div class="col-md-12 finish-explain">
+            <div class="col-md-2">
+                <div class="finish-label">%Finish range: </div>
+            </div>
+            <div class="col-md-2">
+                <button class="td-finish per-40">
+                    < 40</button>
+            </div>
+            <div class="col-md-2">
+                <button class="td-finish per-70">
+                    < 70</button>
+            </div>
+            <div class="col-md-2">
+                <button class="td-finish per-90">
+                    < 90</button>
+            </div>
+            <div class="col-md-2">
+                <button class="td-finish per-100">90+</button>
+            </div>
+        </div>
     </div>
     <div class="container-fluid col-md-6">
         <form id="form-history" name="form-history" action="{{ url_for('demo_app') }}" method="POST">
@@ -306,11 +353,6 @@
                         </div>
                         <div class="col-md-8" style="padding: 10px;">Line is not working</div>
                     </div>
-
-                    <!-- <div>log['Date'][item], log['Time'][item],
-                    log['Department'][item], log['Line'][item],
-                    log['Model'][item], log['Plan'][item],
-                    log['File Name'][item]</div> -->
                 </fieldset>
             </div>
             <div class="col-md-12">
@@ -413,8 +455,19 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
+                    {% if line['% Plan'] < 40 %} 
+                    <td class="td-finish per-40 td-label">% Finish</td>
+                    <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                    {% elif line['% Plan'] < 70 %} 
+                    <td class="td-finish per-70 td-label">% Finish</td>
+                    <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                    {% elif line['% Plan'] < 90 %} 
+                    <td class="td-finish per-90 td-label">% Finish</td>
+                    <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                    {% else %}
+                    <td class="td-finish per-100 td-label">% Finish</td>
+                    <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                    {% endif %}
                     <td>
                         <p><b style="font-size: 18px;">Machine</b></p>
                         {% if line['Machine'] == 0 %}
@@ -459,7 +512,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -467,13 +520,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -482,40 +535,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -528,7 +589,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -536,13 +597,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -551,40 +612,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -597,7 +666,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -605,13 +674,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -620,40 +689,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -666,7 +743,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -674,13 +751,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -689,40 +766,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -735,7 +820,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -743,13 +828,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -758,40 +843,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -804,7 +897,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -812,13 +905,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -827,40 +920,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -874,7 +975,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -882,13 +983,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -897,40 +998,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -943,7 +1052,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -951,13 +1060,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -966,40 +1075,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -1012,7 +1129,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -1020,13 +1137,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -1035,40 +1152,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -1081,7 +1206,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -1089,13 +1214,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -1104,40 +1229,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -1150,7 +1283,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -1158,13 +1291,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -1173,40 +1306,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -1219,7 +1360,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -1227,13 +1368,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -1242,40 +1383,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -1288,7 +1437,7 @@
             <thead>
                 <tr>
                     <td colspan="2" style="background-color: #fff;">
-                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}" style="font-size:30px;"></i>
+                        <i class="fas fa-signal stt-{{ line['Start/Stop'] }}"></i>
                     </td>
                     <th class="th-line" colspan="2">{{ line['Department'] }}-{{ line['Line'] }}</th>
                     <th class="th-day" colspan="2">Day: {{ line['Date'] }}</th>
@@ -1296,13 +1445,13 @@
             </thead>
             <tbody>
                 <tr style="background-color: #d3d3d3;">
-                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
-                        {{ line['Version'] }}
-                    </td>
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
                     <td class="td-value">{{ line['ST Plan'] }}</td>
+                    <td colspan="2" rowspan="2" class="td-model">{{ line['Model'] }}<br>ver:
+                        {{ line['Version'] }}
+                    </td>
                 </tr>
                 <tr style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
@@ -1311,40 +1460,48 @@
                     <td class="td-value">{{ line['ST Actual'] }}</td>
                 </tr>
                 <tr>
-                    <td class="td-finish td-label">% Finish</td>
-                    <td class="td-finish td-value">{{ line['% Plan'] }}%</td>
-                    <td>
-                        <p><b style="font-size: 18px;">Machine</b></p>
-                        {% if line['Machine'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Material</b></p>
-                        {% if line['Material'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Quality</b></p>
-                        {% if line['Quality'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <p><b style="font-size: 18px;">Other</b></p>
-                        {% if line['Other'] == 0 %}
-                        <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
-                        {% else %}
-                        <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
-                        {% endif %}
-                    </td>
+                    {% if line['% Plan'] < 40 %} <td class="td-finish per-40 td-label">% Finish</td>
+                        <td class="td-finish per-40 td-value">{{ line['% Plan'] }}%</td>
+                        {% elif line['% Plan'] < 70 %} <td class="td-finish per-70 td-label">% Finish</td>
+                            <td class="td-finish per-70 td-value">{{ line['% Plan'] }}%</td>
+                            {% elif line['% Plan'] < 90 %} <td class="td-finish per-90 td-label">% Finish</td>
+                                <td class="td-finish per-90 td-value">{{ line['% Plan'] }}%</td>
+                                {% else %}
+                                <td class="td-finish per-100 td-label">% Finish</td>
+                                <td class="td-finish per-100 td-value">{{ line['% Plan'] }}%</td>
+                                {% endif %}
+                                <td>
+                                    <p><b style="font-size: 18px;">Machine</b></p>
+                                    {% if line['Machine'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Machine'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Material</b></p>
+                                    {% if line['Material'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Material'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Quality</b></p>
+                                    {% if line['Quality'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Quality'] }}"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p><b style="font-size: 18px;">Other</b></p>
+                                    {% if line['Other'] == 0 %}
+                                    <img src="{{ url_for('static', filename='gif/stt-1-0.gif') }}">
+                                    {% else %}
+                                    <i class="fas fa-circle stt-{{ line['Start/Stop'] }}-{{ line['Other'] }}"></i>
+                                    {% endif %}
+                                </td>
                 </tr>
             </tbody>
         </table>
@@ -1381,9 +1538,6 @@
         });
 
         // Bold and show Line running
-        var selected_arm_a = '{{ selected_arm_a }}';
-        console.log(selected_arm_a);
-
         var arm_a = []; var arm_b = []; var arm_c = []; var arm_d = [];
         var arm_e = []; var arm_f = []; var arm_j = [];
         var ass_a = []; var ass_b = []; var ass_c = []; var ass_d = [];
@@ -1470,11 +1624,36 @@
             $('.tbl-ass-j').show();
         });
 
-        // On off status color
-        setInterval(function () {
-            $('.stt-1-0').fadeOut(500);
-            $('.stt-1-0').fadeIn(500);
-        }, 500);
+        // Reload page
+        var today = new Date();
+        var cur_date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+        function formatDate(date) {
+            var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+
+            return [year, month, day].join('-');
+        }
+        cur_date = formatDate(cur_date);
+        console.log('cur_date', cur_date);
+        console.log('selected_date', selected_date)
+        if (cur_date === selected_date) {
+            setInterval(function () {
+                location.reload(true);
+            }, 30000);
+        }
+        else {
+            setInterval(function () {
+                $('#date-history').val(cur_date);
+                $('#btn-history').click();
+            }, 300000);
+        }
     });
 </script>
 {% endblock script %}

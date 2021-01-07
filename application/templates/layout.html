@@ -8,8 +8,7 @@
     <title>{{ brand }}</title>
     {% endif %}
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% block head %}
-    {% endblock head %}
+    {% block head %}{% endblock head %}
     <!-- external js STARTS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.css') }}">

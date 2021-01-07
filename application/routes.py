@@ -12,6 +12,7 @@ import xlsxwriter
 import xlrd
 import openpyxl
 import json
+import csv
 
 brand = 'Thien\'s Website'
 now = datetime.utcnow()
@@ -183,60 +184,76 @@ def demo_app():
             cur_path = dst
 
             if os.path.isfile(cur_path):
-                plan_df = pd.read_excel(cur_path, 'Sheet1')
+                plan_df = pd.read_csv(cur_path)
                 last_row = len(plan_df) + 1
+                head_label = 2
                 obj = {}  # Object save last row data
 
                 # Write Plan file
-                wb = openpyxl.load_workbook(cur_path)
-                ws = wb.active
-
-                if last_row > 2:  # Detect new data
-                    for i in range(3, last_row + 1):
+                if last_row > head_label: # Detect new data
+                    for i in range(head_label + 1, last_row + 1):
                         # Copy same value
-                        ws['I' + str(i)] = ws['I2'].value  # Date
-                        ws['J' + str(i)] = ws['J2'].value  # Department
-                        ws['K' + str(i)] = ws['K2'].value  # Line
-                        ws['L' + str(i)] = ws['L2'].value  # Model
-                        ws['M' + str(i)] = ws['M2'].value  # Version
-                        ws['N' + str(i)] = ws['N2'].value  # Q'ty Plan
-                        ws['P' + str(i)] = ws['P2'].value  # ST Plan
+                        plan_df['Date'][last_row -
+                                        head_label] = plan_df['Date'][0]
+                        plan_df['Department'][last_row -
+                                              head_label] = plan_df['Department'][0]
+                        plan_df['Line'][last_row -
+                                        head_label] = plan_df['Line'][0]
+                        plan_df['Model'][last_row -
+                                         head_label] = plan_df['Model'][0]
+                        plan_df['Version'][last_row -
+                                           head_label] = plan_df['Version'][0]
+                        plan_df['Q\'ty Plan'][last_row -
+                                              head_label] = plan_df['Q\'ty Plan'][0]
+                        plan_df['ST Plan'][last_row -
+                                           head_label] = plan_df['ST Plan'][0]
+
                         # % Finish
-                        cur_qty_actual = int(ws['B' + str(i)].value)
-                        cur_qty_plan = int(ws['N' + str(i)].value)
-                        ws['O' + str(i)].value = cur_qty_actual / \
-                            cur_qty_plan * 100
+                        cur_qty_actual = int(
+                            plan_df['Q\'ty Actual'][last_row - head_label])
+                        cur_qty_plan = int(
+                            plan_df['Q\'ty Plan'][last_row - head_label])
+                        plan_df['% Plan'][last_row -
+                                          head_label] = cur_qty_actual / cur_qty_plan * 100
+                    
                         # ST Plan
-                        begin_time = datetime.strptime(
-                            ws['D3'].value, '%H:%M:%S')
-                        cur_time = datetime.strptime(
-                            ws['D' + str(i)].value, '%H:%M:%S')
-                        delta_second = (cur_time - begin_time).total_seconds()
-                        st_actual = (delta_second +
-                                     float(ws['P2'].value)) / cur_qty_actual
-                        ws['Q' + str(i)].value = st_actual
+                        begin_time = str(plan_df['Time'][1])
+                        cur_time = str(plan_df['Time'][last_row - head_label])
+                        begin_time = datetime.strptime(begin_time, '%H:%M:%S')
+                        cur_time = datetime.strptime(cur_time, '%H:%M:%S')
+                        delta_second = abs(
+                            cur_time - begin_time).total_seconds()
+                        if cur_qty_actual == 0:
+                            st_actual = 0
+                        else:
+                            st_actual = (
+                                delta_second + float(plan_df['ST Plan'][0])) / cur_qty_actual
+                        plan_df['ST Actual'][last_row - head_label] = st_actual
 
                 # Get data last line of Plan file
                 obj = {}
-                obj['Start/Stop'] = ws['A' + str(last_row)].value
-                obj['Q\'ty Actual'] = ws['B' + str(last_row)].value
-                obj['Pause/Continue'] = ws['C' + str(last_row)].value
-                obj['Time'] = ws['D' + str(last_row)].value
-                obj['Machine'] = ws['E' + str(last_row)].value
-                obj['Material'] = ws['F' + str(last_row)].value
-                obj['Quality'] = ws['G' + str(last_row)].value
-                obj['Other'] = ws['H' + str(last_row)].value
-                obj['Date'] = ws['I' + str(last_row)].value
-                obj['Department'] = ws['J' + str(last_row)].value
-                obj['Line'] = ws['K' + str(last_row)].value
-                obj['Model'] = ws['L' + str(last_row)].value
-                obj['Version'] = ws['M' + str(last_row)].value
-                obj['Q\'ty Plan'] = ws['N' + str(last_row)].value
-                obj['% Plan'] = round(ws['O' + str(last_row)].value, 1)
-                obj['ST Plan'] = round(ws['P' + str(last_row)].value, 2)
-                obj['ST Actual'] = round(ws['Q' + str(last_row)].value, 2)
+                obj['Start/Stop'] = plan_df['Start/Stop'][last_row - head_label]
+                obj['Q\'ty Actual'] = plan_df['Q\'ty Actual'][last_row - head_label]
+                obj['Pause/Continue'] = plan_df['Pause/Continue'][last_row - head_label]
+                obj['Time'] = plan_df['Time'][last_row - head_label]
+                obj['Machine'] = plan_df['Machine'][last_row - head_label]
+                obj['Material'] = plan_df['Material'][last_row - head_label]
+                obj['Quality'] = plan_df['Quality'][last_row - head_label]
+                obj['Other'] = plan_df['Other'][last_row - head_label]
+                obj['Date'] = plan_df['Date'][last_row - head_label]
+                obj['Department'] = plan_df['Department'][last_row - head_label]
+                obj['Line'] = plan_df['Line'][last_row - head_label]
+                obj['Model'] = plan_df['Model'][last_row - head_label]
+                obj['Version'] = plan_df['Version'][last_row - head_label]
+                obj['Q\'ty Plan'] = plan_df['Q\'ty Plan'][last_row - head_label]
+                obj['% Plan'] = round(
+                    plan_df['% Plan'][last_row - head_label], 1)
+                obj['ST Plan'] = round(
+                    plan_df['ST Plan'][last_row - head_label], 2)
+                obj['ST Actual'] = round(
+                    plan_df['ST Actual'][last_row - head_label], 2)
 
-                wb.save(cur_path)
+                plan_df.to_csv(cur_path, index=False)
 
                 if obj['Department'] == 'ARM' and obj['Line'] == 'A':
                     selected_arm_a.append(obj)
@@ -276,15 +293,30 @@ def demo_app():
         if 'btn-plan' in request.form:
             data = {}
             log_name = 'Log.xlsx'
-            log_writer = pd.ExcelWriter(path + log_name, engine='xlsxwriter')
-            log_df_head = pd.DataFrame(
-                columns=['Date', 'Time', 'Department', 'Line', 'Model', 'Plan', 'Version', 'File Name'])
+            # log_writer = pd.ExcelWriter(path + log_name, engine='xlsxwriter')
+            # log_df_head = pd.DataFrame(
+            #     columns=['Date', 'Time', 'Department', 'Line', 'Model', 'Plan', 'Version', 'File Name'])
+            workbook = openpyxl.Workbook()
+            worksheet = workbook.create_sheet('Sheet1')
+            worksheet['A1'] = 'Date'
+            worksheet['B1'] = 'Time'
+            worksheet['C1'] = 'Department'
+            worksheet['D1'] = 'Line'
+            worksheet['E1'] = 'Model'
+            worksheet['F1'] = 'Plan'
+            worksheet['G1'] = 'Version'
+            worksheet['H1'] = 'File Name'
+
+            # Check exist Log file
+            if not os.path.isfile(path + log_name):
+                # Create new Log file
+                workbook.save(filename=path+log_name)
 
             # Get data Plan form
             start = 0
             qty_actual = 0
             pause = 0
-            time = datetime.now().strftime('%H:%M:%S')
+            my_time = datetime.now().strftime('%H:%M:%S')
             machine = 1
             material = 1
             quality = 1
@@ -305,12 +337,12 @@ def demo_app():
             nonspace_model = model.replace(' ', '-')
             filename = str(my_date) + '_' + dept + '_' + line + '_' \
                                     + nonspace_model + '_' + str(qty_plan) \
-                                    + '_ver' + version + '.xlsx'
+                                    + '_ver' + version + '.csv'
 
             data['Start/Stop'] = start
             data['Q\'ty Actual'] = qty_actual
             data['Pause/Continue'] = pause
-            data['Time'] = time
+            data['Time'] = my_time
             data['Machine'] = machine
             data['Material'] = material
             data['Quality'] = quality
@@ -326,13 +358,6 @@ def demo_app():
             data['ST Actual'] = st_actual
 
             # print(data)
-
-            # Check exist Log file
-            if not os.path.isfile(path + log_name):
-                # Create new Log file
-                log_df_head.to_excel(
-                    log_writer, sheet_name='Sheet1', index=False)
-                log_writer.save()
 
             # Check exists Plan file
             location = dept + '/' + line + '/' + filename
@@ -355,18 +380,17 @@ def demo_app():
             else:
                 # Create new Plan file
                 message = ''
-                writer = pd.ExcelWriter(path + location, engine='openpyxl')
                 df = pd.DataFrame([data])
-                df.to_excel(writer, sheet_name='Sheet1', index=False)
-                writer.save()
+                df.to_csv(path + location, encoding='utf-8', index=False)
 
                 # Insert data to Log file
                 wb = openpyxl.load_workbook(path+log_name)
-                ws = wb.active
+                ws = wb['Sheet1']
                 new_row = ws.max_row + 1
 
                 ws['A' + str(new_row)] = my_date
-                ws['B' + str(new_row)] = time
+                ws['B' + str(new_row)] = my_time
+                ws['B' + str(new_row)].number_format = 'hh:mm:ss'
                 ws['C' + str(new_row)] = dept
                 ws['D' + str(new_row)] = line
                 ws['E' + str(new_row)] = model
@@ -432,35 +456,76 @@ def demo_app():
                                 + item['Line'] + '/' \
                                 + item['File Name']
                 if os.path.isfile(cur_path):
-                    plan_df = pd.read_excel(cur_path, 'Sheet1')
+                    plan_df = pd.read_csv(cur_path)
                     last_row = len(plan_df) + 1
+                    head_label = 2
                     obj = {}  # Object save last row data
 
-                    # Open Plan file
-                    wb = openpyxl.load_workbook(cur_path)
-                    ws = wb.active
+                    # Write Plan file
+                    if last_row > head_label:  # Detect new data
+                        for i in range(head_label + 1, last_row + 1):
+                            # Copy same value
+                            plan_df['Date'][last_row -
+                                            head_label] = plan_df['Date'][0]
+                            plan_df['Department'][last_row -
+                                                head_label] = plan_df['Department'][0]
+                            plan_df['Line'][last_row -
+                                            head_label] = plan_df['Line'][0]
+                            plan_df['Model'][last_row -
+                                            head_label] = plan_df['Model'][0]
+                            plan_df['Version'][last_row -
+                                            head_label] = plan_df['Version'][0]
+                            plan_df['Q\'ty Plan'][last_row -
+                                                head_label] = plan_df['Q\'ty Plan'][0]
+                            plan_df['ST Plan'][last_row -
+                                            head_label] = plan_df['ST Plan'][0]
+
+                            # % Finish
+                            cur_qty_actual = int(
+                                plan_df['Q\'ty Actual'][last_row - head_label])
+                            cur_qty_plan = int(
+                                plan_df['Q\'ty Plan'][last_row - head_label])
+                            plan_df['% Plan'][last_row -
+                                            head_label] = cur_qty_actual / cur_qty_plan * 100
+
+                            # ST Plan
+                            begin_time = str(plan_df['Time'][0])
+                            cur_time = str(plan_df['Time'][last_row - head_label])
+                            begin_time = datetime.strptime(begin_time, '%H:%M:%S')
+                            cur_time = datetime.strptime(cur_time, '%H:%M:%S')
+                            delta_second = abs(
+                                cur_time - begin_time).total_seconds()
+                            if cur_qty_actual == 0:
+                                st_actual = 0
+                            else:
+                                st_actual = (
+                                    delta_second + float(plan_df['ST Plan'][0])) / cur_qty_actual
+                            plan_df['ST Actual'][last_row - head_label] = st_actual
 
                     # Get data last line of Plan file
                     obj = {}
-                    obj['Start/Stop'] = ws['A' + str(last_row)].value
-                    obj['Q\'ty Actual'] = ws['B' + str(last_row)].value
-                    obj['Pause/Continue'] = ws['C' + str(last_row)].value
-                    obj['Time'] = ws['D' + str(last_row)].value
-                    obj['Machine'] = ws['E' + str(last_row)].value
-                    obj['Material'] = ws['F' + str(last_row)].value
-                    obj['Quality'] = ws['G' + str(last_row)].value
-                    obj['Other'] = ws['H' + str(last_row)].value
-                    obj['Date'] = ws['I' + str(last_row)].value
-                    obj['Department'] = ws['J' + str(last_row)].value
-                    obj['Line'] = ws['K' + str(last_row)].value
-                    obj['Model'] = ws['L' + str(last_row)].value
-                    obj['Version'] = ws['M' + str(last_row)].value
-                    obj['Q\'ty Plan'] = ws['N' + str(last_row)].value
-                    obj['% Plan'] = round(ws['O' + str(last_row)].value, 1)
-                    obj['ST Plan'] = round(ws['P' + str(last_row)].value, 2)
-                    obj['ST Actual'] = round(ws['Q' + str(last_row)].value, 2)
+                    obj['Start/Stop'] = plan_df['Start/Stop'][last_row - head_label]
+                    obj['Q\'ty Actual'] = plan_df['Q\'ty Actual'][last_row - head_label]
+                    obj['Pause/Continue'] = plan_df['Pause/Continue'][last_row - head_label]
+                    obj['Time'] = plan_df['Time'][last_row - head_label]
+                    obj['Machine'] = plan_df['Machine'][last_row - head_label]
+                    obj['Material'] = plan_df['Material'][last_row - head_label]
+                    obj['Quality'] = plan_df['Quality'][last_row - head_label]
+                    obj['Other'] = plan_df['Other'][last_row - head_label]
+                    obj['Date'] = plan_df['Date'][last_row - head_label]
+                    obj['Department'] = plan_df['Department'][last_row - head_label]
+                    obj['Line'] = plan_df['Line'][last_row - head_label]
+                    obj['Model'] = plan_df['Model'][last_row - head_label]
+                    obj['Version'] = plan_df['Version'][last_row - head_label]
+                    obj['Q\'ty Plan'] = plan_df['Q\'ty Plan'][last_row - head_label]
+                    obj['% Plan'] = round(
+                        plan_df['% Plan'][last_row - head_label], 1)
+                    obj['ST Plan'] = round(
+                        plan_df['ST Plan'][last_row - head_label], 2)
+                    obj['ST Actual'] = round(
+                        plan_df['ST Actual'][last_row - head_label], 2)
 
-                    wb.close()
+                    plan_df.to_csv(cur_path, index=False) # Update data to csv
 
                     if obj['Department'] == 'ARM' and obj['Line'] == 'A':
                         selected_arm_a.append(obj)
