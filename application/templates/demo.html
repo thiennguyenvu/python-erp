@@ -202,8 +202,6 @@
     .output-data table.tbl-arm,
     .output-data table.tbl-ass {
         margin-bottom: 100px;
-        border-spacing: 10px;
-        border-collapse: separate;
     }
 
     /* Color status */
@@ -439,7 +437,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr style="background-color: #d3d3d3;">
+                <tr class="spacing" style="background-color: #d3d3d3;">
                     <td class="td-label">Q'ty Plan</td>
                     <td class="td-value">{{ line['Q\'ty Plan'] }}</td>
                     <td class="td-label">ST Plan</td>
@@ -448,7 +446,7 @@
                         {{ line['Version'] }}
                     </td>
                 </tr>
-                <tr style="background-color: #FCF1B1">
+                <tr class="spacing" style="background-color: #FCF1B1">
                     <td class="td-label">Q'ty Actual</td>
                     <td class="td-value">{{ line['Q\'ty Actual'] }}</td>
                     <td class="td-label">ST Actual</td>
